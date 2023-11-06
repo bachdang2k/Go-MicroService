@@ -3,3 +3,9 @@ build:
 
 run: build
 	./bin/pricefetch
+
+gen-proto:
+	cd ./proto && sh gen.sh
+
+.PHONY: proto
+
