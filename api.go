@@ -5,24 +5,26 @@ import (
 	"encoding/json"
 	"math/rand"
 	"net/http"
+
+	"github.com/nasaki/micro/types"
 )
 
-type APIFunc func(context.Context, http.ResponseWriter, *http.Request) error 
+type APIFunc func(context.Context, http.ResponseWriter, *http.Request) error
 
-type PriceResponse struct {
-	Ticker string `json:"ticker"`
-	Price float64 `json:"price"`
-}
+// type PriceResponse struct {
+// 	Ticker string `json:"ticker"`
+// 	Price float64 `json:"price"`
+// }
 
 type JSONAPIServer struct {
 	listenAddr string
-	svc PriceFetcher
+	svc        PriceFetcher
 }
 
 func NewJSONAPIServer(listenAddr string, svc PriceFetcher) *JSONAPIServer {
 	return &JSONAPIServer{
 		listenAddr: listenAddr,
-		svc: svc,
+		svc:        svc,
 	}
 }
 
@@ -36,9 +38,9 @@ func makeHTTPHandlerFunc(apiFunc APIFunc) http.HandlerFunc {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "requestID", rand.Intn(100000000))
 
-	return func (w http.ResponseWriter, r *http.Request)  {
+	return func(w http.ResponseWriter, r *http.Request) {
 		if err := apiFunc(ctx, w, r); err != nil {
-			writeJSON(w, http.StatusBadRequest ,map[string]any{"error": err.Error()})
+			writeJSON(w, http.StatusBadRequest, map[string]any{"error": err.Error()})
 		}
 	}
 }
@@ -52,8 +54,8 @@ func (s *JSONAPIServer) handleFetchPrice(ctx context.Context, w http.ResponseWri
 		return err
 	}
 
-	priceResp := PriceResponse{
-		Price: price,
+	priceResp := types.PriceResponse{
+		Price:  price,
 		Ticker: ticker,
 	}
 
@@ -65,4 +67,3 @@ func writeJSON(w http.ResponseWriter, s int, v any) error {
 	w.WriteHeader(s)
 	return json.NewEncoder(w).Encode(v)
 }
-
