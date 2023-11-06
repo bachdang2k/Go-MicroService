@@ -5,18 +5,18 @@ import (
 	"fmt"
 )
 
-type PriceFetcher interface {
+type PriceService interface {
 	FetchPrice(context.Context, string) (float64, error)
 }
 
-type priceFetcher struct{}
+type priceService struct{}
 
 // FetchPrice implements PriceFetcher.
-func (*priceFetcher) FetchPrice(ctx context.Context, ticker string) (float64, error) {
+func (*priceService) FetchPrice(ctx context.Context, ticker string) (float64, error) {
 	return MockPriceFetcher(ctx, ticker)
 }
 
-func (s *priceFetcher) PriceFetcher(ctx context.Context, ticker string) (float64, error) {
+func (s *priceService) PriceFetcher(ctx context.Context, ticker string) (float64, error) {
 	return MockPriceFetcher(ctx, ticker)
 }
 

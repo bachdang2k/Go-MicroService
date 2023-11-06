@@ -17,7 +17,7 @@ func main() {
 	// fmt.Printf("%+v\n", price)
 	// svc := NewLogginService(&priceFetcher{})
 	//return
-	svc := NewLogginService(NewMetricService(&priceFetcher{}))
+	svc := NewLogginService(NewMetricService(&priceService{}))
 
 	listenAddr := flag.String("listenAddr", ":3000", "listen address the service is running")
 	flag.Parse()
