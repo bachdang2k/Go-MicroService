@@ -1,30 +1,48 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"fmt"
+	"log"
+	"time"
 
+	"github.com/nasaki/micro/client"
+	"github.com/nasaki/micro/proto"
 )
 
 func main() {
 
-	// client := client.New("http://localhost:3000")
-
-	// price, err := client.FetchPrice(context.Background(), "ET")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Printf("%+v\n", price)
-	// svc := NewLogginService(&priceFetcher{})
-	//return
-	svc := NewLogginService(NewMetricService(&priceService{}))
-
-	listenAddr := flag.String("listenAddr", ":3000", "listen address the service is running")
+	var (
+		jsonAddr = flag.String("json", ":3000", "Listen adress of the json transport")
+		grpcAddr = flag.String("grpc", ":4000", "Listen adress of the grpc transport")
+		svc = NewLogginService(&priceService{})
+		ctx = context.Background()
+	)
 	flag.Parse()
 
-	server := NewJSONAPIServer(*listenAddr, svc)
+	grpcClient, err := client.NewGRPCClient(":4000")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	server.Run()
+	go func() {
+		for {
+			time.Sleep(2 * time.Second)
+			resp, err := grpcClient.FetchPrice(ctx, &proto.PriceRequest{Ticker: "BTC"})
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Printf("%+v\n", resp)
+		}
+	}()
+
+	go MakeGRPCServerAndRun(*grpcAddr, svc)
+
+	jsonServer := NewJSONAPIServer(*jsonAddr, svc)
+	jsonServer.Run()
+
 }
 
 
